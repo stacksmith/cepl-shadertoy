@@ -179,19 +179,38 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
      // output: pixel color
     fragColor = vec4( col, 1.0 );
 
-;; does not work as it should...
-;; TODO: decompile, fix!
+;; ah, ok!
 (def-frag
-  (let* ((p (- (s~ (* 2.0 gl-frag-coord) :xy)
-	       (s~ iResolution :xy)))
-	 ((a :float) (atan (x p) (y p))) ;; angle to the center
-	 ((r :float) (pow (+ (pow (* (x p) (x p)) 4.0)
-		       (pow (* (y p) (y p)) 4.0)) (/ 1.0 8.0) ))
-	 ((uv :vec2) (v2! (+ (/ 1.0 r) (* 0.2 iGlobalTime)) a))
+  (let* ((p (/ (- (s~ (* 2.0 gl-frag-coord) :xy)
+		  (s~ iResolution :xy))
+	       (y iResolution)))
+	 (a  (atan (x p) (y p))) ;; angle to the center
+	 (r  (pow (+ (pow (* (x p) (x p)) 4.0)
+		     (pow (* (y p) (y p)) 4.0)) (/ 1.0 8.0) ))
+	 (uv (v2! (+ (/ 1.0 r) (* 0.2 iGlobalTime)) a))
 	 (f (* (cos (* 12.0 (x uv)))
 	       (cos (*  6.0 (y uv)))))
-	 ((col :vec3) (+  (* 0.5 (sin (+ (v3! (* f 3.1416))
+	 (col (+  (* 0.5 (sin (+ (v3! (* f 3.1416))
 					 (v3! 0 0.5 1.0))))
-			  (v3! 0.5))))
+		  (v3! 0.5))))
     (setf col (* col r))
     (v4! (x col) (y col) (z col) 1.0)))
+
+;; sligtly improved by having p be positive, and just
+;; using pow more directly...
+(def-frag
+  (let* ((p (/ (abs (- (s~ (* 2.0 gl-frag-coord) :xy)
+		       (s~ iResolution :xy)))
+	       (y iResolution)))
+	 (r  (pow (+ (pow  (x p) 8.0)
+		     (pow  (y p) 8.0)) .125 ))
+	 (uv (v2! (+ (/ 1.0 r) (* 0.2 iGlobalTime))
+		  (atan (x p) (y p)))) 
+	 (f (* (cos (* 12.0 (x uv)))
+	       (cos (*  6.0 (y uv)))
+	       3.1416))
+	 (col (+  (* 0.5 (sin (+ (v3! f)
+				 (v3! 0 0.5 1.0))))
+		  (v3! 0.5))))
+    (setf col (* col r))
+    (v4! (x col) (y col) (z col) 1.0))) ;until we can (v4! col 1.0)
