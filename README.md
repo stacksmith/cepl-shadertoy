@@ -1,15 +1,39 @@
 *** CEPL-SHADERTOY
-This is a work-in-progress project to create an environment similar to shadertoy in common lisp.
+This is a work-in-progress project to create an environment similar to shadertoy in Common Lisp.
 
 CEPL allows shaders to be written in a Lisp-like DSL!
 
 ![screenshot](Screenshot.png?raw=true)
+```lisp
+(def-frag
+  (let (((z :vec2) (/ (* 1.15
+			 (- (* (s~ gl-frag-coord :xy) 2.0)
+			    (s~ iResolution :xy)))
+		      (y iResolution)))
+	(an  (- (* (cos( + (v! 0.0 1.5708)
+			   (v! (* 0.1 iGlobalTime) (* 0.1 iGlobalTime))))
+		   0.51)
+		(* (cos( +  (v! 0.0 1.5708)
+			    (v! (* 0.2 iGlobalTime) (* 0.2 iGlobalTime))))
+		   0.25)))
+	(f 1e20))
+    (for (i 0) (< i 120) (++ i)
+	 (setf z (+ (v! (- (* (x z) (x z))
+			   (* (y z) (y z)))
+			(* 2.0 (x z) (y z)))
+		    an)
+	       f (min f (dot z z))))
+    (setf f (+ 1.0 (/ (log f) 16)))
+    (v! f (* f f) (* f f f) 1.0)))
+```
 
 ** Quickstart:
 
 Clone the repo to a quicklisp-visible directory.
 
-From your Repl, execute the following:
+If you are new to [CEPL](https://github.com/cbaggers/cepl), please read the instructions there.  Generally, you must have a working OpenGL environment.  Usually loading the drivers will work.
+
+From your REPL, execute the following:
 
 ```Lisp
 (ql:quickload :cepl-shadertoy)
