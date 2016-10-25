@@ -26,6 +26,9 @@ CEPL allows shaders to be written in a Lisp-like DSL!
     (setf f (+ 1.0 (/ (log f) 16)))
     (v! f (* f f) (* f f f) 1.0)))
 ```
+### PLEASE SUBMIT YOUR SHADERS 
+by opening an issue, and I will add them to the repo!
+
 ## Quickstart:
 
 Clone the repo to a quicklisp-visible directory.
