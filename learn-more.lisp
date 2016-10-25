@@ -2,9 +2,15 @@
 ;;;
 ;;; Examples from wikip page https://en.wikibooks.org/wiki/Fractals/shadertoy
 ;;;
-(in-package #:cepl-shadertoy)
+;; (ql:quickload :cepl-shadertoy)(in-package cepl-shadertoy)(cepl:repl 700 394)
 ;;
-;; Keep cepl:repl open and running.
+(in-package #:cepl-shadertoy)
+
+DO NOT COMPILE THE FILE!  C-c C-c the individual fragment shaders one at a time.
+Keep cepl:repl open and running.
+(def-g-> prog-1 ()
+     vert frag)
+
 ;;------------------------------------------------------------------------------
 ;; First Image Shader
 ;;
@@ -21,10 +27,6 @@
 (def-frag
   (v! 1 0 0 1))
 
-(def-frag
-  (if (or t nil)
-      (v! 1 1 1 1)
-      (v! 1 1 0 1)))
 
 ;;------------------------------------------------------------------------------
 ;; Diagonal gradient
@@ -43,6 +45,7 @@
 	(v! r g b 1.0)))
 ;;------------------------------------------------------------------------------
 ;; Cross
+;;(π pi)
 ;;
 ;;void mainImage( out vec4 fragColor, in vec2 fragCoord ) {			
 ;;	const float PI = 3.14159265359;
@@ -62,10 +65,9 @@
 ;;	}
 ;;}
 (def-frag
-  (let* ((π pi)
-	 (thickness-h 0.01)
+  (let* ((thickness-h 0.01)
 	 (thickness-v 0.01)
-	 (y (/ (y gl-frag-coord) (y iResolution)))
+	 (y (/ (y gl-frag-coord) (y iResolution))) 
 	 (x (/ (x gl-frag-coord) (x iResolution)))
 	 (diff-x (abs (- 0.5 x)))
 	 (diff-y (abs (- 0.5 y))))
@@ -117,8 +119,7 @@
     (if (and  (< (abs (- (x center) x)) 0.2)
 		(< (abs (- (y center) y)) 0.2))
 	  (v! 1 0 0 1)
-	  (v! 0 1 0 1))
-    ))
+	  (v! 0 1 0 1))))
 ;; Circle
 ;; 
 ;;// https://www.shadertoy.com/view/Mdf3Df
@@ -138,28 +139,25 @@
 ;;}
 (def-frag
   (let* ((center (v! (/ (x iResolution) 2)
-		    (/ (y iResolution) 2)))
-	 (loc (v! (x gl-frag-coord) (y gl-frag-coord)))
+		     (/ (y iResolution) 2)))
+	 (loc (v! (x gl-frag-coord)
+		  (y gl-frag-coord)))
 	 (radius (length (- loc center))))
-    (if (< radius 100)
+    (if (< radius 100)a
 	(v! 1 0 0 0)
 	(v! 0 0 0 0))))
 
-(def-frag
-  (let* ((center (v! (/ (x iResolution) 2)
-		    (/ (y iResolution) 2)))
-	 (loc (s~ gl-frag-coord :xy)) ;swizzling
-	 (radius (length (- loc center))))
-    (if (< radius 100)
-	(v! 1 1 0 0)
-	(v! 0 0 0 0))))
+;; This should work but does not due to https://github.com/cbaggers/varjo/issues/48
 (def-frag
   (let* ((center (/ (s~ iResolution :xy) 2)) ;divide vector by scalar
 	 (loc (s~ gl-frag-coord :xy))
 	 (radius (length (- loc center))))
-    (if (< radius 100)
-	(v! 1 1 1 0)
-	(v! 0 0 0 0))))
+    (v4! (if (< radius 100) 1 0) 0)))
+
+(def-frag
+  (let ((k 1.0))
+    (v4! k 0)))
+
 
 ;; Julia set from https://www.shadertoy.com/view/XsS3Rm
 #|
@@ -297,9 +295,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
 |#
 (def-frag
-  (let (((color :float) (sin (/ (* (x gl-frag-coord) (y gl-frag-coord))
-				(float (mod  iGlobalTime 30))))))
-    (v! color color color 1.0)) 
+  (let ((color  (sin (/ (* (x gl-frag-coord) (y gl-frag-coord))
+			(float (mod  iGlobalTime 30))))))
+    (v4! color color color 1 )) 
 )
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord ) {

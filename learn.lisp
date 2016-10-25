@@ -5,7 +5,9 @@
 ;;;
 ;;; A secondary goal of this project is to shake down CEPL for bugs...  If you
 ;;; find some, please report.
-
+;;
+;; (ql:quickload :cepl-shadertoy)(in-package cepl-shadertoy)(cepl:repl 700 394)
+;;
 (in-package #:cepl-shadertoy)
 
 DO NOT COMPILE!  This file is meant to be read...
@@ -53,10 +55,17 @@ DO NOT COMPILE!  This file is meant to be read...
 ;;------------------------------------------------------------------------------
 ;; Try to change the screen to different colors.  You can use decimal fractions
 ;; 
-(def-frag ()
-	  (v! 0.7 0 0.5 1))
+(def-frag
+  (v! 0.7 0 0.5 1))
 ;;
-;; Note: certain kinds of crashes (but not all) will cause CEPL to halt the
+;;#############################################################################
+;;
+;; Interlude - dealing with crashes
+;;
+;; Since we are working in an interactive environment, and the system is live
+;; while we are swapping shaders, we are likely to encounter some problems.
+;;
+;; Certain kinds of crashes (but not all) will cause CEPL to halt the
 ;; application loop, and your recompiled shaders will no longer affect the
 ;; output screen.  An easy way to see if CEPL is running is to move something
 ;; in front of the window, and see if it's redrawing.  If the window is set
@@ -68,11 +77,19 @@ DO NOT COMPILE!  This file is meant to be read...
 ;; You can always stop it with
 (stop-loop)
 ;;
-;;------------------------------------------------------------------------------
-;; 2.  Vectors.
+;; Very occasionally, you will need to also restart the pipeline:
+(def-g-> prog-1 () vert frag)
 ;;
-;; Vectors are used extensively in OpenGL, CEPL and VARJO.  Vectors may be
-;; constructed as shown above, or from smaller-dimensioned vectors, such as:
+;; To see what's currently in the running pipeline, execute this in the REPL:
+;; (pull-g 'prog-1)
+;;
+;; If all else fails, you can always M-x slime-restart-inferior-lisp and start
+;; over with a
+;; (ql:quickload :cepl-shadertoy)(in-package cepl-shadertoy)(cepl:repl 700 394)
+;;
+;;#############################################################################
+;;
+;; Fragment shaders in CEPL can be lispy:
 ;;
 (def-frag
   (let ((q (v! 0.2 0.3)))
@@ -83,14 +100,14 @@ DO NOT COMPILE!  This file is meant to be read...
 (print (let ((q (v! 0.2 0.3)))
 	    (v! q 0.1 1)))
 ;;------------------------------------------------------------------------------
-;; 3.  gl-frag-coord
+;; gl-frag-coord
 ;;
 ;; frag is executed for every pixel in the screen.  To find out the coordinates
 ;; of the pixel you are rendering, in window coordinates, use gl-frag-coord.
 
 (def-frag
    (let ((c1 (v! 0.986 0.571 0.898 0))
-	(c2 (v! 0.537 0.741 0.408 0)))
+	 (c2 (v! 0.537 0.741 0.408 0)))
      (if (> 100 (x gl-frag-coord)) ;left side is different color!
 	 c1
 	 c2)))
@@ -106,10 +123,7 @@ DO NOT COMPILE!  This file is meant to be read...
 	     (> .55 (x tex)))
 	c1
 	background)))
-
-(def-g-> prog-1 ()
-     vert frag)
-
+;;
 ;;------------------------------------------------------------------------------
 ;; A horizontal line, similarly, requires monitoring the y coordinate range. 
 ;;
