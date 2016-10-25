@@ -39,7 +39,7 @@ From your REPL, execute the following:
 (in-package :cepl-shadertoy)
 (cepl:repl 700 394)
 (run-loop)
-
+```
 You should see some funky stuff in the CEPL output window.
 
 ## Notes
