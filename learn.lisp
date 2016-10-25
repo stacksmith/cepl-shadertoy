@@ -151,3 +151,47 @@ DO NOT COMPILE!  This file is meant to be read...
 ;;
 ;; Look at learn-more for some cooler shaders.
 ;;
+void mainImage(out vec4 o, vec2 i)
+{
+  float f=length(i)/iResolution.y;
+  o=vec4((1.+cos(1e3*mix(1.,sin(iGlobalTime),.3)*f*f))/2.);
+}
+(def-frag
+  (let ((f (/ (length gl-frag-coord) (y iResolution))))
+    (v4! (/ (+ 1.0 (cos (* 1e3 f f (mix 2.0 (sin iGlobalTime) .3)) ))
+	    2.0))))
+;;----------------------------------------------------------------------------
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    vec2 p = (-iResolution.xy + 2.0*fragCoord)/iResolution.y;
+    // angle of each pixel to the center of the screen
+    float a = atan(p.y,p.x);
+    // modified distance metric
+    float r = pow( pow(p.x*p.x,4.0) + pow(p.y*p.y,4.0), 1.0/8.0 );
+    // index texture by (animated inverse) radious and angle
+    vec2 uv = vec2( 1.0/r + 0.2*iGlobalTime, a );
+    // pattern: cosines
+    float f = cos(12.0*uv.x)*cos(6.0*uv.y);
+    // color fetch: palette
+    vec3 col = 0.5 + 0.5*sin( 3.1416*f + vec3(0.0,0.5,1.0) );
+     // lighting: darken at the center    
+    col = col*r;
+     // output: pixel color
+    fragColor = vec4( col, 1.0 );
+
+;; does not work as it should...
+;; TODO: decompile, fix!
+(def-frag
+  (let* ((p (- (s~ (* 2.0 gl-frag-coord) :xy)
+	       (s~ iResolution :xy)))
+	 ((a :float) (atan (x p) (y p))) ;; angle to the center
+	 ((r :float) (pow (+ (pow (* (x p) (x p)) 4.0)
+		       (pow (* (y p) (y p)) 4.0)) (/ 1.0 8.0) ))
+	 ((uv :vec2) (v2! (+ (/ 1.0 r) (* 0.2 iGlobalTime)) a))
+	 (f (* (cos (* 12.0 (x uv)))
+	       (cos (*  6.0 (y uv)))))
+	 ((col :vec3) (+  (* 0.5 (sin (+ (v3! (* f 3.1416))
+					 (v3! 0 0.5 1.0))))
+			  (v3! 0.5))))
+    (setf col (* col r))
+    (v4! (x col) (y col) (z col) 1.0)))

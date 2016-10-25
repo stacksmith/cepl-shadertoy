@@ -37,17 +37,36 @@
           (tex vert)))
 
 (defun-g frag ((tex :vec2) &uniform (iGlobalTime :float) (iResolution :vec3))
- (let ((color  (sin (/ (* (x gl-frag-coord) (y gl-frag-coord))
+ (let ((color  (cos (/ (* (x gl-frag-coord) (y gl-frag-coord))
 			(float (mod  iGlobalTime 30))))))
-   (v4! color color color 1 )))
-   
+   (v4! color  )))
+
+
+
 (def-g-> prog-1 ()
-     vert frag)
+  (vert g-pt) (frag :vec2))
 
 
 (defmacro def-frag (&body body)
   `(defun-g frag ((tex :vec2) &uniform (iGlobalTime :float) (iResolution :vec3))
      ,@body))
+
+(def-frag
+  (let* (((z :vec2) (/ (* 1.15 (- (* (s~ gl-frag-coord :xy) 2.0)
+				  (s~ iResolution :xy)))
+		       (y iResolution)))
+	 (vtime (v2! (* .05 iGlobalTime)))
+	 (vtemp (+ (v2! 0.0 1.5708) vtime))
+	 (an  (- (* 0.51 (cos vtemp))
+		 (* 0.25 (cos (+ vtemp vtime)))))
+	 (f 1e20))
+    (for (i 0) (< i 120) (++ i)
+	 (let ((xz (x z)) (yz (y z)))
+	   (setf z (+ an (v! (- (* xz xz) (* yz yz))
+			     (* 2.0 xz yz)))
+		 f (min f (dot z z)))))
+    (setf f (- (/ (log f) 8)))
+    (v! f  (* f f) (* f f f ) 1.0)))
 
 (defun step-demo ()
   

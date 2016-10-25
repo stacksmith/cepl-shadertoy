@@ -218,8 +218,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     (v! (* count scale)(* count scale)(* count scale) 1.0)))
 #|
 // Created by inigo quilez - iq/2014
-// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
-
+// License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License
 // line 13: pixel coordinates	
 // line 15: c travels around the main cardiod c(t) = Â½e^it - Â¼e^i2t
 // line 20: z = zÂ² + c		
@@ -245,28 +244,43 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 	fragColor = vec4(f,f*f,f*f*f,1.0);
 }
 |#
+;; original translation
 (def-frag
-  (let (((z :vec2) (/ (* 1.15
-			 (- (* (s~ gl-frag-coord :xy) 2.0)
-			    (s~ iResolution :xy)))
-		      (y iResolution)))
-	(an  (- (* (cos( + (v! 0.0 1.5708)
-			   (v! (* 0.1 iGlobalTime) (* 0.1 iGlobalTime))))
-		   0.51)
-		(* (cos( +  (v! 0.0 1.5708)
-			    (v! (* 0.2 iGlobalTime) (* 0.2 iGlobalTime))))
-		   0.25)))
-	(f 1e20))
+  (let* (((z :vec2) (/ (* 1.15 (- (* (s~ gl-frag-coord :xy) 2.0)
+				  (s~ iResolution :xy)))
+		       (y iResolution)))
+	 (vtemp (v2! 0.0 1.5708))
+	 (vtime (v2! (* .05 iGlobalTime)))
+	 (an  (- (* 0.51 (cos (+ vtemp vtime)))
+		 (* 0.25 (cos (+ vtemp vtime vtime)))))
+	 (f 1e20))
     (for (i 0) (< i 120) (++ i)
-	 (setf z (+ (v! (- (* (x z) (x z))
-			   (* (y z) (y z)))
-			(* 2.0 (x z) (y z)))
-		    an)
-	       f (min f (dot z z))))
+	 (let ((xz (x z)) (yz (y z)))
+	   (setf z (+ an (v! (- (* xz xz) (* yz yz))
+			     (* 2.0 xz yz)))
+		 f (min f (dot z z)))))
     (setf f (+ 1.0 (/ (log f) 16)))
-    (v! f (* f f) (* f f f) 1.0)
-    )
-)
+    (v! f (* f f) (* f f f ) 1.0)))
+
+;; slightly better color selection
+(def-frag
+  (let* (((z :vec2) (/ (* 1.15 (- (* (s~ gl-frag-coord :xy) 2.0)
+				  (s~ iResolution :xy)))
+		       (y iResolution)))
+	 (vtime (v2! (* .05 iGlobalTime)))
+	 (vtemp (+ (v2! 0.0 1.5708) vtime))
+	 (an  (- (* 0.51 (cos vtemp))
+		 (* 0.25 (cos (+ vtemp vtime)))))
+	 (f 1e20))
+    (for (i 0) (< i 120) (++ i)
+	 (let ((xz (x z)) (yz (y z)))
+	   (setf z (+ an (v! (- (* xz xz) (* yz yz))
+			     (* 2.0 xz yz)))
+		 f (min f (dot z z)))))
+    (setf f (- (/ (log f) 8)))
+    (v! f  (* f f) (* f f f ) 1.0)))
+
+
 #|
 https://www.shadertoy.com/view/4dlGW7   
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
@@ -299,7 +313,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 			(float (mod  iGlobalTime 30))))))
     (v4! color color color 1 )) 
 )
-
+;; https://www.shadertoy.com/view/Ms2XDW
 void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 	vec2 uv = ( fragCoord.xy / iResolution.xy ) * iResolution.y/iResolution.x;
 	float t = iGlobalTime * 0.1;
@@ -318,9 +332,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 
 
 (def-frag
-  (let* (((uv :vec2) (/ (* (/ (s~ gl-frag-coord :xy) (s~ iResolution :xy))
-			   (y iResolution))
-			(x iResolution)))
+  (let* (((uv :vec2)  (* (/ (s~ gl-frag-coord :xy) (s~ iResolution :xy))
+			    (/ (y iResolution) (x iResolution))))
 	 (tt (* iGlobalTime 0.1))
 	 (x1 (x uv))
 	 (y1 (y uv)))
@@ -328,15 +341,15 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 		    (* y1 (sin tt)))
 	  (y uv) (+ (* x1 (sin tt)
 		       y1 (cos tt))))
-    (let* (((zoomFactor :float) (+ 50 (* 5(+ 0.5 (* 0.5 (sin (* iGlobalTime 1.0)))))))
+    (let* (((zoomFactor :float) (+ 50 (* 5(+ 0.5 (* 0.5 (sin iGlobalTime))))))
 	   (x (sin (* (x uv) zoomFactor)))
 	   (y (sin (* (y uv) zoomFactor)))
-	   (c (sin (+ (cos (tan (+ (cos x) (sin y))))
-		      (tan (+ (cos x) (sin y) ))))))
+	   (t1 (tan (+ (cos x) (sin y))))
+	   (c (sin (+ t1 (cos t1)))))
+      
       (v! (* c (x uv))
 	  (* c (y uv))
 	  (* c (sin (+ (* (x uv) (y uv))
 		       iGlobalTime)))
-	  1.0))
-) 
-)
+	  1.0))))
+;;yz²
