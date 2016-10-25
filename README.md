@@ -3,6 +3,8 @@ This is a work-in-progress project to create an environment similar to shadertoy
 
 CEPL allows shaders to be written in a Lisp-like DSL!
 
+![screenshot](Screenshot.png?raw=true)
+
 ** Quickstart:
 
 Clone the repo to a quicklisp-visible directory.
