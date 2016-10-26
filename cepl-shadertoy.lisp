@@ -75,14 +75,16 @@
   (update-repl-link) ;; Keep the REPL responsive while running
 
   (clear)            ;; Clear the drawing buffer
-
   (setf *iGlobalTime* (float (/ (sdl2:get-ticks) 1000)))
   (map-g #'prog-1 *vert-stream*
 	 :iGlobalTime *iGlobalTime*
-	 :iResolution *iResolution*
-	 )
+	 :iResolution *iResolution* )
   (swap))            ;; Display newly rendered buffer 
 
+
+(defun mouse-callback (event timestamp whatever)
+  (format t  "~A~%"(skitter:xy-pos-vec event))
+  )
 
 (defun run-loop ()
   (with-viewport (make-viewport (list (truncate (x *iResolution*))
@@ -94,11 +96,12 @@
 	  ;; Create a GPU datastream
 	  *vert-stream* (make-buffer-stream *vert-array*))
     ;; continue rendering frames until *running* is set to nil
-    (loop :while (and  *running*
-		       (not (shutting-down-p))) :do
-       (continuable (step-demo)))))
+    (skitter:whilst-listening-to ((#'mouse-callback (skitter:mouse 0) :pos))
+      (loop :while (and  *running*
+			 (not (shutting-down-p))) :do
+	 (continuable (step-demo)))))
 
-(defun stop-loop ()
-  (setf *running* nil))
+  (defun stop-loop ()
+    (setf *running* nil)))
 
 

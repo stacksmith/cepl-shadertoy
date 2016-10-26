@@ -1,12 +1,12 @@
 # CEPL-SHADERTOY
-This is a work-in-progress project to create an environment similar to shadertoy in Common Lisp.
+(work-in-progress) With CEPL-SHADERTOY you can create fragment shaders in a Lisp-like DSL (see [CEPL](https://github.com/cbaggers/cepl) and [Varjo](https://github.com/cbaggers/varjo)).
 
-CEPL allows shaders to be written in a Lisp-like DSL!
+A fragment shader is a GPU functions that is called once for every pixel.  You can see examples [on shadertoy](https://www.shadertoy.com).  Here you can do it in Lisp.
 
 ![screenshot](Screenshot.png?raw=true)
 
-### PLEASE SUBMIT YOUR SHADERS 
-by opening an issue, and I will add them to the repo!
+### PLEASE SUBMIT YOUR SHADERS
+To report bugs or submit shaders, please open an issue.
 
 ## Quickstart:
 
