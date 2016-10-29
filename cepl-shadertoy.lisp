@@ -32,15 +32,19 @@
 
 (defparameter *iGlobalTime* nil) ;will get from sdl
 (defparameter *iResolution* (v! 700 394 1.0))
+(defparameter *iMouse* (v4! 0))
+
 (defun-g vert ((vert g-pt))
   (values (v! (pos vert) 1.0) 
           (tex vert)))
 
-(defun-g frag ((tex :vec2) &uniform (iGlobalTime :float) (iResolution :vec3))
- (let ((color  (cos (/ (* (x gl-frag-coord) (y gl-frag-coord))
-			(float (mod  iGlobalTime 30))))))
-   (v4! color  )))
 
+(defun-g frag ((tex :vec2) &uniform
+	       (iGlobalTime :float)
+	       (iResolution :vec3)
+	       (iMouse :vec4))
+ 
+ (v4! 1 0 0 0))
 
 
 (def-g-> prog-1 ()
@@ -48,25 +52,17 @@
 
 
 (defmacro def-frag (&body body)
-  `(defun-g frag ((tex :vec2) &uniform (iGlobalTime :float) (iResolution :vec3))
+  `(defun-g frag ((tex :vec2) &uniform
+		  (iGlobalTime :float)
+		  (iResolution :vec3)
+		  (iMouse :vec4))
      ,@body))
 
-(def-frag
-  (let* (((z :vec2) (/ (* 1.15 (- (* (s~ gl-frag-coord :xy) 2.0)
-				  (s~ iResolution :xy)))
-		       (y iResolution)))
-	 (vtime (v2! (* .05 iGlobalTime)))
-	 (vtemp (+ (v2! 0.0 1.5708) vtime))
-	 (an  (- (* 0.51 (cos vtemp))
-		 (* 0.25 (cos (+ vtemp vtime)))))
-	 (f 1e20))
-    (for (i 0) (< i 120) (++ i)
-	 (let ((xz (x z)) (yz (y z)))
-	   (setf z (+ an (v! (- (* xz xz) (* yz yz))
-			     (* 2.0 xz yz)))
-		 f (min f (dot z z)))))
-    (setf f (- (/ (log f) 8)))
-    (v! f  (* f f) (* f f f ) 1.0)))
+
+
+
+
+
 
 (defun step-demo ()
   
@@ -83,8 +79,10 @@
 
 
 (defun mouse-callback (event timestamp whatever)
-  (format t  "~A~%"(skitter:xy-pos-vec event))
-  )
+  (let ((xy (skitter:xy-pos-vec event)))
+   ; (format t  "~A~%" (type-of xy))
+    (setf (x *iMouse*) (elt xy 0)
+	  (y *iMouse*) (elt xy 1))))
 
 (defun run-loop ()
   (with-viewport (make-viewport (list (truncate (x *iResolution*))
@@ -99,9 +97,9 @@
     (skitter:whilst-listening-to ((#'mouse-callback (skitter:mouse 0) :pos))
       (loop :while (and  *running*
 			 (not (shutting-down-p))) :do
-	 (continuable (step-demo)))))
+	 (continuable (step-demo))))))
 
-  (defun stop-loop ()
-    (setf *running* nil)))
+(defun stop-loop ()
+  (setf *running* nil))
 
 

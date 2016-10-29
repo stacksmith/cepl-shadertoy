@@ -1,7 +1,7 @@
 # CEPL-SHADERTOY
-(work-in-progress) With CEPL-SHADERTOY you can create fragment shaders in a Lisp-like DSL (see [CEPL](https://github.com/cbaggers/cepl) and [Varjo](https://github.com/cbaggers/varjo)).
+(work-in-progress - requires latest pulls of CEPL from github) With CEPL-SHADERTOY you can create fragment shaders in a Lisp-like DSL (see [CEPL](https://github.com/cbaggers/cepl) and [Varjo](https://github.com/cbaggers/varjo)).
 
-A fragment shader is a GPU functions that is called once for every pixel.  You can see examples [on shadertoy](https://www.shadertoy.com).  Here you can do it in Lisp.
+A fragment shader is a GPU function that is called once for every pixel.  You can see examples [on shadertoy](https://www.shadertoy.com).  Here you can do it in Lisp.
 
 ![screenshot](Screenshot.png?raw=true)
 
