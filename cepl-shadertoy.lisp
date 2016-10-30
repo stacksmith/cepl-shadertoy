@@ -41,10 +41,8 @@
 
 (defun-g frag ((tex :vec2) &uniform
 	       (iGlobalTime :float)
-	       (iResolution :vec3)
-	       (iMouse :vec4))
- 
- (v4! 1 0 0 0))
+	       (iResolution :vec3))
+  (v4! 1 0 0 0))
 
 
 (def-g-> prog-1 ()
@@ -54,14 +52,8 @@
 (defmacro def-frag (&body body)
   `(defun-g frag ((tex :vec2) &uniform
 		  (iGlobalTime :float)
-		  (iResolution :vec3)
-		  (iMouse :vec4))
+		  (iResolution :vec3))
      ,@body))
-
-
-
-
-
 
 
 (defun step-demo ()
@@ -78,11 +70,24 @@
   (swap))            ;; Display newly rendered buffer 
 
 
-(defun mouse-callback (event timestamp whatever)
-  (let ((xy (skitter:xy-pos-vec event)))
-   ; (format t  "~A~%" (type-of xy))
-    (setf (x *iMouse*) (elt xy 0)
-	  (y *iMouse*) (elt xy 1))))
+
+(defun on-mouse-pos (event timestamp whatever)
+  (let ((xy  (skitter:xy-pos-vec event)))
+    ;; While the button is pushed, update current pos in xy
+    (when (skitter:mouse-down-p skitter.sdl2.mouse-buttons:mouse.left)
+      (setf (x *iMouse*) (x xy)
+	    (y *iMouse*) (- (y *iResolution*) (y xy))))
+        (format t "~A~%" *iMouse*)
+))
+
+(defun on-mouse-button (event timestamp whatever)
+  ;; when the button is pressed, copy click position to zw
+  (if (skitter:button-down-p event)
+    (setf (z *iMouse*) (x *iMouse*)
+	  (w *iMouse*) (y *iMouse*))
+    (setf (z *iMouse*) (- (z *iMouse*))
+	  (w *iMouse*) (- (w *iMouse*))))
+       (format t "...~A~%" *iMouse*))
 
 (defun run-loop ()
   (with-viewport (make-viewport (list (truncate (x *iResolution*))
@@ -94,7 +99,10 @@
 	  ;; Create a GPU datastream
 	  *vert-stream* (make-buffer-stream *vert-array*))
     ;; continue rendering frames until *running* is set to nil
-    (skitter:whilst-listening-to ((#'mouse-callback (skitter:mouse 0) :pos))
+    (skitter:whilst-listening-to
+	((#'on-mouse-pos (skitter:mouse 0) :pos)
+	 (#'on-mouse-button (skitter:mouse 0) :button))
+      
       (loop :while (and  *running*
 			 (not (shutting-down-p))) :do
 	 (continuable (step-demo))))))

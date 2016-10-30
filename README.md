@@ -1,5 +1,7 @@
 # CEPL-SHADERTOY
-(work-in-progress - requires latest pulls of CEPL from github) With CEPL-SHADERTOY you can create fragment shaders in a Lisp-like DSL (see [CEPL](https://github.com/cbaggers/cepl) and [Varjo](https://github.com/cbaggers/varjo)).
+(work-in-progress - requires latest pulls of CEPL and related libraries from github - see below)
+
+With CEPL-SHADERTOY you can create fragment shaders in a Lisp-like DSL (see [CEPL](https://github.com/cbaggers/cepl) and [Varjo](https://github.com/cbaggers/varjo)).
 
 A fragment shader is a GPU function that is called once for every pixel.  You can see examples [on shadertoy](https://www.shadertoy.com).  Here you can do it in Lisp.
 
@@ -11,6 +13,8 @@ To report bugs or submit shaders, please open an issue.
 ## Quickstart:
 
 Clone the repo to a quicklisp-visible directory.
+
+NOTE: right now (30 Oct 2016) I am working with a bleeding-edge CEPL repo, which requires pulling it and a number of other repos listed in "clone-cepl.sh"... This will change soon, but until then, quicklisp is probably not going to cut it.
 
 If you are new to [CEPL](https://github.com/cbaggers/cepl), please read the instructions there.  Generally, you must have a working OpenGL environment.  Usually loading the drivers will work.
 
