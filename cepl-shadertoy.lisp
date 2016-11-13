@@ -30,7 +30,8 @@
 (defparameter *vert-array* nil)
 (defparameter *vert-stream* nil)
 
-(defparameter *iGlobalTime* nil) ;will get from sdl
+(defparameter *iGlobalTime* 0.0) ;will get from sdl
+(defparameter *iDate* (v4! 0 0 0 0))
 (defparameter *iResolution* (v! 700 394 1.0))
 (defparameter *iMouse* (v4! 0))
 
@@ -39,10 +40,10 @@
           (tex vert)))
 
 
-(defun-g frag ((tex :vec2) &uniform
-	       (iGlobalTime :float)
-	       (iResolution :vec3))
-  (v4! 1 0 0 0))
+(defun-g frag ((tex :vec2))
+  (sin (+ (s~ *iDate* :wwzx)
+	  (v4! (length (* gl-frag-coord 0.1))) ))
+  )
 
 
 (def-g-> prog-1 ()
@@ -50,11 +51,16 @@
 
 
 (defmacro def-frag (&body body)
-  `(defun-g frag ((tex :vec2) &uniform
-		  (iGlobalTime :float)
-		  (iResolution :vec3))
+  `(defun-g frag ((tex :vec2) )
      ,@body))
 
+
+(defun set-iDate ()
+  "set *iDate* to a v4 containing year month day second"
+  (multiple-value-bind
+	(second minute hour date month year day-of-week dst-p tz)
+      (get-decoded-time)
+    (setf *iDate* (v4! year month date (float (/ (sdl2:get-ticks) 1000))))))
 
 (defun step-demo ()
   
@@ -64,9 +70,8 @@
 
   (clear)            ;; Clear the drawing buffer
   (setf *iGlobalTime* (float (/ (sdl2:get-ticks) 1000)))
-  (map-g #'prog-1 *vert-stream*
-	 :iGlobalTime *iGlobalTime*
-	 :iResolution *iResolution* )
+  (set-iDate)
+  (map-g #'prog-1 *vert-stream*)
   (swap))            ;; Display newly rendered buffer 
 
 
@@ -77,7 +82,7 @@
     (when (skitter:mouse-down-p skitter.sdl2.mouse-buttons:mouse.left)
       (setf (x *iMouse*) (x xy)
 	    (y *iMouse*) (- (y *iResolution*) (y xy))))
-        (format t "~A~%" *iMouse*)
+       ;; (format t "~A~%" *iMouse*)
 ))
 
 (defun on-mouse-button (event timestamp whatever)
@@ -87,7 +92,8 @@
 	  (w *iMouse*) (y *iMouse*))
     (setf (z *iMouse*) (- (z *iMouse*))
 	  (w *iMouse*) (- (w *iMouse*))))
-       (format t "...~A~%" *iMouse*))
+      ;; (format t "...~A~%" *iMouse*)
+  )
 
 (defun run-loop ()
   (with-viewport (make-viewport (list (truncate (x *iResolution*))
@@ -109,5 +115,7 @@
 
 (defun stop-loop ()
   (setf *running* nil))
+
+
 
 

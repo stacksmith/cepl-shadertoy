@@ -157,8 +157,8 @@ void mainImage(out vec4 o, vec2 i)
   o=vec4((1.+cos(1e3*mix(1.,sin(iGlobalTime),.3)*f*f))/2.);
 }
 (def-frag
-  (let ((f (/ (length gl-frag-coord) (y iResolution))))
-    (v4! (/ (+ 1.0 (cos (* 1e3 f f (mix 2.0 (sin iGlobalTime) .3)) ))
+  (let ((f (/ (length gl-frag-coord) (y *iResolution*))))
+    (v4! (/ (+ 1.0 (cos (* 1e3 f f (mix 2.0 (sin *iGlobalTime*) .3)) ))
 	    2.0))))
 ;;----------------------------------------------------------------------------
 void mainImage( out vec4 fragColor, in vec2 fragCoord )

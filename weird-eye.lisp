@@ -23,23 +23,30 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 
 
 (def-frag
-  (let* (((uv :vec2)  (* (/ (s~ gl-frag-coord :xy) (s~ iResolution :xy))
-			    (/ (y iResolution) (x iResolution))))
-	 (tt (* iGlobalTime 0.1))
+  (let* (((uv :vec2)  (* (/ (s~ gl-frag-coord :xy) (s~ *iResolution* :xy))
+			    (/ (y *iResolution*) (x *iResolution*))))
+	 (tt (* *iGlobalTime* 0.1))
 	 (x1 (x uv)) (y1 (y uv)))
     (setf (x uv) (- (* x1 (cos tt))
 		    (* y1 (sin tt)))
 	  (y uv) (+ (* x1 (sin tt))
 		    (* y1 (cos tt))))
-    (let* (((zoomFactor :float) (+ 50 (* 5(+ 0.5 (* 0.5 (sin iGlobalTime))))))
+    (let* (((zoomFactor :float) (+ 50 (* 5(+ 0.5 (* 0.5 (sin *iGlobalTime*))))))
 	   (xuv (x uv)) (yuv (y uv))
-	   (x (sin (* xuv zoomFactor)))
+	   (x (sin (* xuv zoomFactor))) ;
 	   (y (sin (* yuv zoomFactor)))
 	   (t1 (tan (+ (cos x) (sin y))))
 	   (c (sin (+ t1 (cos t1)))))
       (v! (* c xuv) (* c yuv)
-	  (* c (sin (+ iGlobalTime (* xuv yuv))))
+	  (* c (sin (+ *iGlobalTime* (* xuv yuv))))
 	  1.0))))
+;; TODO:
+;; find out why this fails... xuv? yuv?
+;;  (x (sin (* (x uv) zoomFactor)))
+;;  (y (sin (* (y uv) zoomFactor)))
+
+
+
 ;;yz²
 
 

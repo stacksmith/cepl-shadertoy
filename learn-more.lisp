@@ -39,9 +39,9 @@ Keep cepl:repl open and running.
 ;;    fragColor = vec4(r,g,b,1.0);
 ;;}
 (def-frag
-  (let ((r (/ (x gl-frag-coord) (x iResolution)))
-	(g (/ (y gl-frag-coord) (y iResolution)))
-	(b (/ (x gl-frag-coord) (y iResolution))))
+  (let ((r (/ (x gl-frag-coord) (x *iResolution*)))
+	(g (/ (y gl-frag-coord) (y *iResolution*)))
+	(b (/ (x gl-frag-coord) (y *iResolution*))))
 	(v! r g b 1.0)))
 ;;------------------------------------------------------------------------------
 ;; Cross
@@ -67,8 +67,8 @@ Keep cepl:repl open and running.
 (def-frag
   (let* ((thickness-h 0.01)
 	 (thickness-v 0.01)
-	 (y (/ (y gl-frag-coord) (y iResolution))) 
-	 (x (/ (x gl-frag-coord) (x iResolution)))
+	 (y (/ (y gl-frag-coord) (y *iResolution*))) 
+	 (x (/ (x gl-frag-coord) (x *iResolution*)))
 	 (diff-x (abs (- 0.5 x)))
 	 (diff-y (abs (- 0.5 y))))
     (cond ;or is malfunctioning as of 10/23/16
@@ -89,8 +89,8 @@ Keep cepl:repl open and running.
 ;;}
 ;;
 (def-frag
-  (let* ((x (/ (x gl-frag-coord) (x iResolution)))
-	 (y (/ (y gl-frag-coord) (y iResolution)))
+  (let* ((x (/ (x gl-frag-coord) (x *iResolution*)))
+	 (y (/ (y gl-frag-coord) (y *iResolution*)))
 	 (center (v! 0.5 0.5)))
       (if (and  (< (abs (- (x center) x)) 0.2)
 		(< (abs (- (y center) y)) 0.2))
@@ -110,11 +110,11 @@ Keep cepl:repl open and running.
 ;;    if( abs(center.x - x) < 0.2 && abs(center.y - y) < 0.2) {fragColor = vec4(1.0,0.0;;,0.0,1.0);} // red rectangle in center of image 
 ;;}
 (def-frag
-  (let* ((ratio (/ (x iResolution) (y iResolution)))
+  (let* ((ratio (/ (x *iResolution*) (y *iResolution*)))
 	(x (/ (* ratio (x gl-frag-coord))
-	      (x iResolution)))
+	      (x *iResolution*)))
 	(y (/ (y gl-frag-coord)
-	      (y iResolution)))
+	      (y *iResolution*)))
 	(center (v! 0.5 0.5)))
     (if (and  (< (abs (- (x center) x)) 0.2)
 		(< (abs (- (y center) y)) 0.2))
@@ -138,21 +138,20 @@ Keep cepl:repl open and running.
 ;;        fragColor = vec4(0,0,0,1); // black background
 ;;}
 (def-frag
-  (let* ((center (v! (/ (x iResolution) 2)
-		     (/ (y iResolution) 2)))
+  (let* ((center (v! (/ (x *iResolution*) 2)
+		     (/ (y *iResolution*) 2)))
 	 (loc (v! (x gl-frag-coord)
 		  (y gl-frag-coord)))
 	 (radius (length (- loc center))))
-    (if (< radius 100)a
+    (if (< radius 100)
 	(v! 1 0 0 0)
 	(v! 0 0 0 0))))
 
-;; This should work but does not due to https://github.com/cbaggers/varjo/issues/48
 (def-frag
-  (let* ((center (/ (s~ iResolution :xy) 2)) ;divide vector by scalar
+  (let* ((center (/ (s~ *iResolution* :xy) 2)) ;divide vector by scalar
 	 (loc (s~ gl-frag-coord :xy))
 	 (radius (length (- loc center))))
-    (v4! (if (< radius 100) 1 0) 0)))
+    (v4! (if (< radius 100) 0 1 ) 0)))
 
 (def-frag
   (let ((k 1.0))
@@ -198,10 +197,10 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
 (def-frag
   (let* ((uv (* (- (s~ gl-frag-coord :xy)
-		   (* (s~ iResolution :xy) 0.5))
+		   (* (s~ *iResolution* :xy) 0.5))
 		(/ 2.5
-		   (min (x iResolution)
-			(y iResolution)))))
+		   (min (x *iResolution*)
+			(y *iResolution*)))))
 	 ((c :vec2) (v! 0.285 0.01))
 	 ((v :vec2) uv)
 	 (scale 0.01)
@@ -247,10 +246,10 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 ;; original translation
 (def-frag
   (let* (((z :vec2) (/ (* 1.15 (- (* (s~ gl-frag-coord :xy) 2.0)
-				  (s~ iResolution :xy)))
-		       (y iResolution)))
+				  (s~ *iResolution* :xy)))
+		       (y *iResolution*)))
 	 (vtemp (v2! 0.0 1.5708))
-	 (vtime (v2! (* .05 iGlobalTime)))
+	 (vtime (v2! (* .05 *iGlobalTime*)))
 	 (an  (- (* 0.51 (cos (+ vtemp vtime)))
 		 (* 0.25 (cos (+ vtemp vtime vtime)))))
 	 (f 1e20))
@@ -265,9 +264,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 ;; slightly better color selection
 (def-frag
   (let* (((z :vec2) (/ (* 1.15 (- (* (s~ gl-frag-coord :xy) 2.0)
-				  (s~ iResolution :xy)))
-		       (y iResolution)))
-	 (vtime (v2! (* .05 iGlobalTime)))
+				  (s~ *iResolution* :xy)))
+		       (y *iResolution*)))
+	 (vtime (v2! (* .05 *iGlobalTime*)))
 	 (vtemp (+ (v2! 0.0 1.5708) vtime))
 	 (an  (- (* 0.51 (cos vtemp))
 		 (* 0.25 (cos (+ vtemp vtime)))))
@@ -310,46 +309,6 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 |#
 (def-frag
   (let ((color  (sin (/ (* (x gl-frag-coord) (y gl-frag-coord))
-			(float (mod  iGlobalTime 30))))))
+			(float (mod  *iGlobalTime* 30))))))
     (v4! color color color 1 )) 
 )
-;; https://www.shadertoy.com/view/Ms2XDW
-void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
-	vec2 uv = ( fragCoord.xy / iResolution.xy ) * iResolution.y/iResolution.x;
-	float t = iGlobalTime * 0.1;
-	// Rotate the uv coordinates.
-	float x1 = uv.x;
-	float y1 = uv.y;
-	uv.x = x1*cos(t) - y1*sin(t);
-	uv.y = x1*sin(t) + y1*cos(t);
-	// Render a line pattern along the x axis
-	float zoomFactor = 50.0+(sin(iGlobalTime * 1.0)*0.50 + 0.50)*5.0;
-	float x = sin(uv.x * zoomFactor);
-	float y = sin(uv.y * zoomFactor);
-	float c = sin( cos(tan( cos(x) + sin(y))) + tan( cos(x) + sin(y) ) );
-	fragColor = vec4( c*uv.x, c*uv.y, c*sin(uv.x*uv.y+iGlobalTime), 1.0 );
-}
-
-
-(def-frag
-  (let* (((uv :vec2)  (* (/ (s~ gl-frag-coord :xy) (s~ iResolution :xy))
-			    (/ (y iResolution) (x iResolution))))
-	 (tt (* iGlobalTime 0.1))
-	 (x1 (x uv))
-	 (y1 (y uv)))
-    (setf (x uv) (- (* x1 (cos tt))
-		    (* y1 (sin tt)))
-	  (y uv) (+ (* x1 (sin tt)
-		       y1 (cos tt))))
-    (let* (((zoomFactor :float) (+ 50 (* 5(+ 0.5 (* 0.5 (sin iGlobalTime))))))
-	   (x (sin (* (x uv) zoomFactor)))
-	   (y (sin (* (y uv) zoomFactor)))
-	   (t1 (tan (+ (cos x) (sin y))))
-	   (c (sin (+ t1 (cos t1)))))
-      
-      (v! (* c (x uv))
-	  (* c (y uv))
-	  (* c (sin (+ (* (x uv) (y uv))
-		       iGlobalTime)))
-	  1.0))))
-;;yz²
